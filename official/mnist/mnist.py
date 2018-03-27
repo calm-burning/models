@@ -90,8 +90,12 @@ class Model(tf.keras.Model):
     return self.fc2(y)
 
 
-def model_fn(features, labels, mode, params):
-  # type: (Union[tf.Tensor, dict], tf.Tensor, str, dict) -> tf.estimator.EstimatorSpec  # pylint: disable=line-too-long
+def model_fn(features,  # type: Union[tf.Tensor, dict]
+             labels,    # type: tf.Tensor
+             mode,      # type: str
+             params     # type: dict
+            ):
+  # type: (...) -> tf.estimator.EstimatorSpec
   """The model_fn argument for creating an Estimator."""
   model = Model(params['data_format'])
   image = features

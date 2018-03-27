@@ -31,21 +31,26 @@ import os
 import sys
 import time
 
-import tensorflow as tf  # pylint: disable=g-bad-import-order
-import tensorflow.contrib.eager as tfe  # pylint: disable=g-bad-import-order
+# pylint: disable=g-bad-import-order
+import tensorflow as tf
+import tensorflow.contrib.eager as tfe
+from tensorflow.python.framework import ops  # pylint: disable=unused-import
 
 from official.mnist import dataset as mnist_dataset
 from official.mnist import mnist
 from official.utils.arg_parsers import parsers
+# pylint: enable=g-bad-import-order
 
 
 def loss(logits, labels):
+  # type: (ops.EagerTensor, ops.EagerTensor) -> ops.EagerTensor
   return tf.reduce_mean(
       tf.nn.sparse_softmax_cross_entropy_with_logits(
           logits=logits, labels=labels))
 
 
 def compute_accuracy(logits, labels):
+  # type: (ops.EagerTensor, ops.EagerTensor) -> ops.EagerTensor
   predictions = tf.argmax(logits, axis=1, output_type=tf.int64)
   labels = tf.cast(labels, tf.int64)
   batch_size = int(logits.shape[0])
@@ -53,7 +58,13 @@ def compute_accuracy(logits, labels):
       tf.cast(tf.equal(predictions, labels), dtype=tf.float32)) / batch_size
 
 
-def train(model, optimizer, dataset, step_counter, log_interval=None):
+def train(model,              # type: tf.keras.Model
+          optimizer,          # type: tf.train.Optimizer
+          dataset,            # type: tf.data.Dataset
+          step_counter,       # type: tf.Variable
+          log_interval=None   # type: int
+         ):
+  # type: (...) -> None
   """Trains model on `dataset` using `optimizer`."""
 
   start = time.time()
@@ -78,6 +89,7 @@ def train(model, optimizer, dataset, step_counter, log_interval=None):
 
 
 def test(model, dataset):
+  # type: (tf.keras.Model, tf.data.Dataset) -> None
   """Perform an evaluation of `model` on the examples from `dataset`."""
   avg_loss = tfe.metrics.Mean('loss')
   accuracy = tfe.metrics.Accuracy('accuracy')
@@ -96,6 +108,7 @@ def test(model, dataset):
 
 
 def main(argv):
+  # type: (list) -> None
   parser = MNISTEagerArgParser()
   flags = parser.parse_args(args=argv[1:])
 
