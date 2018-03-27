@@ -45,6 +45,7 @@ _NUM_IMAGES = {
 # Data processing
 ###############################################################################
 def get_filenames(is_training, data_dir):
+  # type: (bool, str) -> list
   """Returns a list of filenames."""
   data_dir = os.path.join(data_dir, 'cifar-10-batches-bin')
 
@@ -62,6 +63,7 @@ def get_filenames(is_training, data_dir):
 
 
 def parse_record(raw_record, is_training):
+  # type: (tf.Tensor, bool) -> (tf.Tensor, tf.Tensor)
   """Parse CIFAR-10 image and label from a raw record."""
   # Convert bytes to a vector of uint8 that is record_bytes long.
   record_vector = tf.decode_raw(raw_record, tf.uint8)
@@ -86,6 +88,7 @@ def parse_record(raw_record, is_training):
 
 
 def preprocess_image(image, is_training):
+  # type: (tf.Tensor, bool) -> tf.Tensor
   """Preprocess a single image of layout [height, width, depth]."""
   if is_training:
     # Resize the image to add four extra pixels on each side.
@@ -105,6 +108,7 @@ def preprocess_image(image, is_training):
 
 def input_fn(is_training, data_dir, batch_size, num_epochs=1,
              num_parallel_calls=1, multi_gpu=False):
+  # type: (bool, str, int, int, int, bool) -> tf.data.Dataset
   """Input_fn using the tf.data input pipeline for CIFAR-10 dataset.
 
   Args:
@@ -134,6 +138,7 @@ def input_fn(is_training, data_dir, batch_size, num_epochs=1,
 
 
 def get_synth_input_fn():
+  # type: () -> tf.data.Dataset
   return resnet_run_loop.get_synth_input_fn(
       _HEIGHT, _WIDTH, _NUM_CHANNELS, _NUM_CLASSES)
 
@@ -146,6 +151,7 @@ class Cifar10Model(resnet_model.Model):
 
   def __init__(self, resnet_size, data_format=None, num_classes=_NUM_CLASSES,
                version=resnet_model.DEFAULT_VERSION):
+    # type: (int, str, int, int) -> None
     """These are the parameters that work for CIFAR-10 data.
 
     Args:
@@ -184,6 +190,7 @@ class Cifar10Model(resnet_model.Model):
 
 
 def cifar10_model_fn(features, labels, mode, params):
+  # type: (tf.Tensor, tf.Tensor, str, dict) -> tf.estimator.EstimatorSpec
   """Model function for CIFAR-10."""
   features = tf.reshape(features, [-1, _HEIGHT, _WIDTH, _NUM_CHANNELS])
 
@@ -216,6 +223,7 @@ def cifar10_model_fn(features, labels, mode, params):
 
 
 def main(argv):
+  # type: (list) -> None
   parser = resnet_run_loop.ResnetArgParser()
   # Set defaults that are reasonable for this model.
   parser.set_defaults(data_dir='/tmp/cifar10_data',
