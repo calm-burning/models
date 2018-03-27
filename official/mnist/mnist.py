@@ -41,6 +41,7 @@ class Model(tf.keras.Model):
   """
 
   def __init__(self, data_format):
+    # type: (str) -> None
     """Creates a model for classifying a hand-written digit.
 
     Args:
@@ -67,6 +68,7 @@ class Model(tf.keras.Model):
         (2, 2), (2, 2), padding='same', data_format=data_format)
 
   def __call__(self, inputs, training):
+    # type: (tf.Tensor, bool) -> tf.Tensor
     """Add operations to classify a batch of input images.
 
     Args:
@@ -89,6 +91,7 @@ class Model(tf.keras.Model):
 
 
 def model_fn(features, labels, mode, params):
+  # type: (Union[tf.Tensor, dict], tf.Tensor, str, dict) -> tf.estimator.EstimatorSpec  # pylint: disable=line-too-long
   """The model_fn argument for creating an Estimator."""
   model = Model(params['data_format'])
   image = features
@@ -146,6 +149,7 @@ def model_fn(features, labels, mode, params):
 
 
 def validate_batch_size_for_multi_gpu(batch_size):
+  # type: (int) -> None
   """For multi-gpu, batch-size must be a multiple of the number of GPUs.
 
   Note that this should eventually be handled by replicate_model_fn
@@ -176,6 +180,7 @@ def validate_batch_size_for_multi_gpu(batch_size):
 
 
 def main(argv):
+  # type: (list) -> None
   parser = MNISTArgParser()
   flags = parser.parse_args(args=argv[1:])
 
