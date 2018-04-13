@@ -67,22 +67,23 @@ def no_op_time(tpu_url):
     x = tf.no_op()
 
   print("CPU no-op time: {:0.2f} ms (std {:0.2f})".format(*timed_run(
-      target="", graph=no_op_graph, op=x, repeats=100)))
+      target="", graph=graph, op=x, repeats=100)))
   print("TPU no-op time: {:0.2f} ms (std {:0.2f})".format(*timed_run(
-      target=tpu_url, graph=no_op_graph, op=x, repeats=100)))
+      target=tpu_url, graph=graph, op=x, repeats=100)))
 
 def addition_time(tpu_url):
   for size in [4, 128]:
-    for parallel in [1, 8]:
+    for parallel in [1, 8, 64, 256, 4096]:
       graph = tf.Graph()
       with graph.as_default():
         x = tf.Variable(
             tf.random_uniform((size, size), maxval=1, dtype=tf.float32))
-        additions = [x+x for _ in range(parallel)]
-        y = tf.group(*additions)
+        y = tf.add_n([x for _ in range(parallel)])
 
       run_time, _ = timed_run(tpu_url, graph=graph, op=y, repeats=10)
-      print(size, parallel, run_time)
+      print("{} x {}".format(size, size).ljust(9) +
+            ", {}".format(parallel).ljust(6) +
+            "  {:0.2f} ({0.2f})".format(run_time, run_time / parallel))
 
 def basic_operations(tpu_url):
   no_op_time(tpu_url)
