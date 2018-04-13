@@ -17,6 +17,8 @@ import os
 import sys
 import timeit
 
+import numpy as np
+
 import tensorflow as tf
 from tensorflow.contrib import tpu
 from tensorflow.contrib.cluster_resolver import TPUClusterResolver
@@ -48,20 +50,34 @@ def cloud_tpu_resolution(tpu_name):
   return tpu_url
 
 
-def basic_operations(tpu_url):
-  size = 4096
-  g = tf.Graph()
-  with g.as_default():
-    x = tf.Variable(tf.random_uniform((size, size), maxval=1., dtype=tf.float32))
-    y = tf.matmul(x, x)
+def timed_run(target, graph, ops, repeats=5):
+  run_times = []
+  for _ in range(repeats):
+    with tf.Session(target=target, graph=graph) as sess:
+      tf.global_variables_initializer().run()
+      start_time = timeit.default_timer()
+      [sess.run(op) for op in ops]
+      run_times.append(timeit.default_timer() - start_time)
+  return np.mean(run_times), np.std(run_times)
 
-  with tf.Session(tpu_url, graph=g) as sess:
-    tf.global_variables_initializer().run()
-    st = timeit.default_timer()
-    y_computed = y.eval()
-    compute_time = timeit.default_timer() - st
-    print(y_computed)
-    print(compute_time)
+
+def print_times(message, mean, std):
+  print("{}: {:0.2f} ms (std {:0.2f})".format(message, mean*1000, std*1000))
+
+
+def basic_operations(tpu_url):
+  no_op_graph = tf.Graph()
+  with no_op_graph.as_default():
+    x = tf.no_op()
+
+  cpu_no_op_time, cpu_no_op_std = timed_run(
+      target="", graph=no_op_graph, ops=[x], repeats=100)
+  tpu_no_op_time, tpu_no_op_std = timed_run(
+      target=tpu_url, graph=no_op_graph, ops=[x], repeats=100)
+
+  print_times("CPU no-op time", cpu_no_op_time, 0)
+  print_times("TPU no-op time", tpu_no_op_time, 0)
+
 
 
 class DemoParser(argparse.ArgumentParser):
