@@ -50,15 +50,12 @@ def cloud_tpu_resolution(tpu_name):
 def basic_operations(tpu_url):
   g = tf.Graph()
   with g.as_default():
-    alpha = tf.Variable(3.0, name="alpha")
-    beta = alpha + 1
-
-  with tf.Session(graph=g) as sess:
-    tf.global_variables_initializer().run()
-    print(beta.eval())
+    x = tf.Variable(tf.random_uniform((128, 128), maxval=1., dtype=float32))
+    y = tf.mat_mul(x, x)
 
   with tf.Session(tpu_url) as sess:
     tf.global_variables_initializer().run()
+    print(y.eval())
 
 
 class DemoParser(argparse.ArgumentParser):
