@@ -50,33 +50,42 @@ def cloud_tpu_resolution(tpu_name):
   return tpu_url
 
 
-def timed_run(target, graph, ops, repeats=5):
+def timed_run(target, graph, op, repeats=5):
   run_times = []
   for _ in range(repeats):
     with tf.Session(target=target, graph=graph) as sess:
       tf.global_variables_initializer().run()
       start_time = timeit.default_timer()
-      [sess.run(op) for op in ops]
-      run_times.append(timeit.default_timer() - start_time)
+      sess.run(op)
+      run_times.append((timeit.default_timer() - start_time) * 1000)
   return np.mean(run_times), np.std(run_times)
 
 
-def print_times(message, mean, std):
-  print("{}: {:0.2f} ms (std {:0.2f})".format(message, mean*1000, std*1000))
-
-
-def basic_operations(tpu_url):
-  no_op_graph = tf.Graph()
-  with no_op_graph.as_default():
+def no_op_time(tpu_url):
+  graph = tf.Graph()
+  with graph.as_default():
     x = tf.no_op()
 
-  cpu_no_op_time, cpu_no_op_std = timed_run(
-      target="", graph=no_op_graph, ops=[x], repeats=100)
-  tpu_no_op_time, tpu_no_op_std = timed_run(
-      target=tpu_url, graph=no_op_graph, ops=[x], repeats=100)
+  print("CPU no-op time: {:0.2f} ms (std {:0.2f})".format(*timed_run(
+      target="", graph=no_op_graph, op=x, repeats=100)))
+  print("TPU no-op time: {:0.2f} ms (std {:0.2f})".format(*timed_run(
+      target=tpu_url, graph=no_op_graph, op=x, repeats=100)))
 
-  print_times("CPU no-op time", cpu_no_op_time, 0)
-  print_times("TPU no-op time", tpu_no_op_time, 0)
+def addition_time(tpu_url):
+  for size in [4, 128]:
+    for parallel in [1, 8]:
+      graph = tf.Graph()
+      with graph.as_default():
+        x = tf.Variable(
+            tf.random_uniform((size, size), maxval=1, dtype=tf.float32))
+        additions = [x+x for _ in range(parallel)]
+        y = tf.group(*additions)
+
+      run_time, _ = timed_run(tpu_url, graph=graph, op=y, repeats=10)
+      print(size, parallel, run_time)
+
+def basic_operations(tpu_url):
+  no_op_time(tpu_url)
 
 
 
