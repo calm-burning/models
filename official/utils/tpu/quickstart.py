@@ -72,10 +72,10 @@ def no_op_time(tpu_url):
       target=tpu_url, graph=graph, op=x, repeats=100)))
 
 def addition_time(tpu_url):
-  for parallel in [1, 8, 64, 256, 4096, 16384, 65536]:
+  for parallel in [1, 8, 64, 256, 4096, 16384, 32768]:
     print("{} matrix additions:".format(parallel))
-    print("  Shape      time (ms)  time/num_adds (ms)")
-    for size in [4, 128, 512, 1024, 2048, 4096]:
+    print("  Shape          time (ms)      time/num_adds (ms)")
+    for size in [4, 128, 512, 1024, 2048, 4096, 8192]:
       graph = tf.Graph()
       with graph.as_default():
         x = tf.Variable(
@@ -83,9 +83,10 @@ def addition_time(tpu_url):
         y = tf.add_n([x for _ in range(parallel)])
 
       run_time, _ = timed_run(tpu_url, graph=graph, op=y, repeats=5)
-      print("  {} x {},".format(size, size).ljust(11) +
-            "  {:0.2f}".format(run_time).ljust(9) +
-            " ({:0.2f})".format(run_time / parallel))
+      print("  {} x {},".format(size, size).ljust(17) +
+            "{:0.1f}".format(run_time).ljust(15) +
+            "({:0.3f})".format(run_time / parallel))
+    print()
 
 def basic_operations(tpu_url):
   no_op_time(tpu_url)
