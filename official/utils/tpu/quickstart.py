@@ -86,6 +86,7 @@ def addition_time(tpu_url):
 
 def basic_operations(tpu_url):
   no_op_time(tpu_url)
+  addition_time(tpu_url)
 
 
 
