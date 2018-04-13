@@ -83,7 +83,8 @@ def addition_time(tpu_url):
       run_time, _ = timed_run(tpu_url, graph=graph, op=y, repeats=10)
       print("{} x {}".format(size, size).ljust(9) +
             ", {}".format(parallel).ljust(6) +
-            "  {:0.2f} ({0.2f})".format(run_time, run_time / parallel))
+            "  {:0.2f}".ljust(6).format(run_time) +
+            " ({:0.2f})".format(run_time / parallel))
 
 def basic_operations(tpu_url):
   no_op_time(tpu_url)
