@@ -47,7 +47,7 @@ def cloud_tpu_resolution(tpu_name):
   return tpu_url
 
 
-def basic_operations(tpu_ip):
+def basic_operations(tpu_url):
   g = tf.Graph()
   with g.as_default():
     alpha = tf.Variable(3.0, name="alpha")
@@ -56,6 +56,9 @@ def basic_operations(tpu_ip):
   with tf.Session(graph=g) as sess:
     tf.global_variables_initializer().run()
     print(beta.eval())
+
+  with tf.Session(tpu_url) as sess:
+    tf.global_variables_initializer().run()
 
 
 class DemoParser(argparse.ArgumentParser):
@@ -69,6 +72,7 @@ def main():
   parser = DemoParser()
   tpu_name = parser.parse_args(sys.argv[1:]).tpu
   tpu_url = cloud_tpu_resolution(tpu_name=tpu_name)
+  basic_operations(tpu_url=tpu_url)
 
 if __name__ == "__main__":
   main()
