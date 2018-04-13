@@ -15,6 +15,7 @@
 import argparse
 import os
 import sys
+import timeit
 
 import tensorflow as tf
 from tensorflow.contrib import tpu
@@ -48,14 +49,19 @@ def cloud_tpu_resolution(tpu_name):
 
 
 def basic_operations(tpu_url):
+  size = 4096
   g = tf.Graph()
   with g.as_default():
-    x = tf.Variable(tf.random_uniform((128, 128), maxval=1., dtype=float32))
-    y = tf.mat_mul(x, x)
+    x = tf.Variable(tf.random_uniform((size, size), maxval=1., dtype=tf.float32))
+    y = tf.matmul(x, x)
 
-  with tf.Session(tpu_url) as sess:
+  with tf.Session(tpu_url, graph=g) as sess:
     tf.global_variables_initializer().run()
-    print(y.eval())
+    st = timeit.default_timer()
+    y_computed = y.eval()
+    compute_time = timeit.default_timer() - st
+    print(y_computed)
+    print(compute_time)
 
 
 class DemoParser(argparse.ArgumentParser):
